@@ -32,8 +32,23 @@ class YoutubePlayerEventHandler {
 
   /// Handles the [javaScriptMessage] from the player iframe and create events.
   void call(JavaScriptMessage javaScriptMessage) {
-    final data = Map.from(jsonDecode(javaScriptMessage.message));
+    // final data = Map.from(jsonDecode(javaScriptMessage.message));
 
+    // for (final entry in data.entries) {
+    //   if (entry.key == 'ApiChange') {
+    //     onApiChange(entry.value);
+    //   } else {
+    //     _events[entry.key]?.call(entry.value);
+    //   }
+    // }
+    try {
+    final decoded = jsonDecode(javaScriptMessage.message);
+    if (decoded is! Map) {
+      print('Received non-map JSON: ${javaScriptMessage.message}');
+      return;
+    }
+
+    final data = Map.from(decoded);
     for (final entry in data.entries) {
       if (entry.key == 'ApiChange') {
         onApiChange(entry.value);
@@ -41,6 +56,10 @@ class YoutubePlayerEventHandler {
         _events[entry.key]?.call(entry.value);
       }
     }
+  } catch (e) {
+    print('Invalid JSON message: ${javaScriptMessage.message}');
+    // Optionally log e.toString() or handle it gracefully
+  }
   }
 
   /// This event fires whenever a player has finished loading and is ready to begin receiving API calls.
